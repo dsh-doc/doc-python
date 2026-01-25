@@ -1,0 +1,156 @@
+---
+title: XML 解析
+---
+
+## 什么是xml
+XML 指可扩展标记语言，被设计用来传输和存储数据，和 json 属于同类产品（目前地位逐渐被 json 取代），这里不再过多介绍！
+
+一个典型的 xml，大致这样 `test.xml`
+```xml
+<person id="20250101">
+   <name>张三</ name>
+   <age>20</age>
+   <gender>男</gender>
+</person>
+```
+Python 使用 ElementTree 解析 xml，对 xml 进行增删改查，以下具体介绍(和 js 解析 html 一致)！
+
+
+
+## 解析
+fromstring方法： 可以将包含XML数据的字符串转换为 Element 对象：
+```python
+import xml.etree.ElementTree as ET
+
+xml_string = '<root><element>Some data</element></root>'
+root = ET.fromstring(xml_string)
+
+print(root.tag)  # 输出: root
+print(root[0].tag)  # 输出: element
+print(root[0].text)  # 输出: Some data
+```
+
+parse方法： 用于解析XML文件，解析整个 XML 文档
+```py
+tree = ET.parse('example.xml')
+root = tree.getroot()
+```
+
+## 查找
+### 查找元素
+```py
+# find方法： 可以查找具有指定标签的第一个子元素
+title_element = root.find('title')
+
+# 使用 findall 方法可以查找具有指定标签的所有子元素
+book_elements = root.findall('book')
+```
+
+举个实际的例子
+```py
+import xml.etree.ElementTree as ET
+
+# 定义一个 XML 字符串
+xml_string = '''
+<bookstore>
+  <book>
+    <title>Python从入门到放弃</title>
+    <author>丁少华</author>
+  </book>
+ <book>
+    <title>Python直接放弃</title>
+    <author>马克思</author>
+  </book>
+</bookstore>
+'''
+
+# 使用 ElementTree 解析 XML 字符串
+root = ET.fromstring(xml_string)
+
+# 遍历 XML 树
+for book in root.findall('book'):
+    title = book.find('title').text
+    author = book.find('author').text
+    print(f'书的标题: {title}, 书的作者: {author}')
+```
+
+
+### 查找元素的属性和内容
+```py
+# 通过 attrib 可以访问元素的属性
+price = book_element.attrib['price']
+
+# 通过 text 属性可以访问元素的文本内容：
+title_text = title_element.text
+```
+
+## 创建
+```py
+import xml.etree.ElementTree as ET
+
+# 创建一个XML文档
+root = ET.Element('bookstore')
+
+# 添加第一本书
+book1 = ET.SubElement(root, 'book')
+title1 = ET.SubElement(book1, 'title')
+title1.text = 'Python从入门到放弃'
+author1 = ET.SubElement(book1, 'author')
+author1.text = '丁少华'
+
+# 添加第一本书
+...
+
+# 格式化缩进
+ET.indent(root)
+
+# 将XML文档保存到文件
+tree = ET.ElementTree(root)
+tree.write('books.xml', encoding='utf-8', xml_declaration=True)
+```
+
+执行完毕你的项目里会多出一个 books.xml 文件，内容如下：
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+<bookstore>
+  <book>
+    <title>Python从入门到放弃</title>
+    <author>丁少华</author>
+  </book>
+</bookstore>
+```
+
+## 修改
+修改很简单，无论是修改内容还是属性，只要找到直接重新赋值即可！
+```py
+import xml.etree.ElementTree as ET
+
+# 定义一个 XML 字符串
+xml_string = '''
+<bookstore>
+  <book>
+    <title>Python从入门到放弃</title>
+    <author>丁少华</author>
+  </book>
+</bookstore>
+'''
+
+# 使用 ElementTree 解析 XML 字符串
+root = ET.fromstring(xml_string)
+
+# 找到书本并定位为到它的author去修改
+book1 = root.find('book')
+book1Author = book1.find('author')
+book1Author.text = '小红'
+
+# 再次获取下书本1的作者，即为小红了
+print(book1Author.text)
+```
+
+使用 remove() 方法则可以删除元素
+```py
+root.remove(book1)
+```
+
+
+

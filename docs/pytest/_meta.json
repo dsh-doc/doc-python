@@ -1,0 +1,15 @@
+[
+    "index",
+    {
+        "type": "divider"
+    },
+    {
+        "type": "section-header",
+        "label": "基础功能"
+    },
+    "test-case",
+    "cli-arg",
+    "setup-teardown",
+    "mark",
+    "fixture"
+]

@@ -1,0 +1,205 @@
+---
+title: Env与Cli参数
+---
+import { Divider } from '../../components/divider';
+
+
+## 环境变量
+当前操作系统在启动进程时传给它的一组“键-值”配置 就是所谓的环境变量。   
+
+在Linux上 通过`echo $VAR`，windows 上通过`env:VAR`获取。
+
+另外在三方程序进程中也提供了获取环境变量的方法，如 node 的`process.env`和 java 的`System.getenv("KEY")`，当然 python 也内置了获取环境变量的方法，python 中的环境变量是有 内置模块 [OS](https://www.runoob.com/python3/python3-os-file-methods.html) 提供能力！
+
+
+## 获取环境变量
+
+```python
+import os
+
+# 获取所有环境变量
+print(os.environ)
+
+## 获取指定环境变量（不存在会报错）
+print(os.environ['HOME'])
+
+## 获取指定环境变量（不存在则为 None）
+print(os.environ.get('HOME'))
+
+
+## 获取指定环境变量（os.environ.get(key, default) 的封装）
+print(os.getenv('HOME'))
+
+## 默认值
+os.getenv('someKey', 'xxx') # 当环境变量 someKey 不存在时，会返回 'xxx'。
+
+## 设置环境变量（仅当前进程和子进程可见）
+os.environ['MY_VAR'] = 'my_value'
+```
+
+
+
+
+## Env 文件
+一般情况下，在我们开发过程中喜欢把配置文件放在一个单独的本项目的环境变量文件中 如根目录的 .env，然后通过程序加载这个文件内容到本进程的环境变量中。
+```
+APP_ENV=production
+APP_NAME=啥也不是系统
+```
+
+Python 中使用 [python-dotenv](https://pypi.org/project/python-dotenv/) 库来加载 .env 文件中的环境变量到当前进程中，这样就可以在代码中直接使用 os.getenv("VAR") 读取 .env 中的键值
+
+```python
+from dotenv import load_dotenv; 
+
+load_dotenv()
+print(os.getenv('APP_NAME'))
+```
+
+注意的是这并不是“注入到系统里”。python-dotenv 只是把 .env 里的键值加载进当前 Python 进程的环境（os.environ）。要点：
+* 作用范围：仅当前进程；不会修改操作系统全局环境，也不影响启动它的父进程/终端。
+* 生命周期：随当前进程结束而消失。
+* 可见性：只有在加载之后由该进程创建的子进程会继承这些变量。
+
+<div className='border-y-2 border-blue-200 flex justify-center items-center'>
+<h2 className='p-0 m-0'> --==分割线🌸分割线==--</h2>
+</div>
+
+## 命令行参数
+
+command-line argument ，简写 cli arg。命令行参数是指： 在执行程序时，通过命令行界面传递给程序的额外信息或选项！
+
+## 使用 argv 获取
+
+内置的 sys 模块提供了一个 argv 的方法，可以获取当前执行脚本信息
+
+```python
+import sys
+
+print(sys.argv)
+
+# 输出：['.\\run-test.py', '--abc', 'prod']
+py run-test.py --abc prod
+```
+
+## 使用 argparse 获取
+
+sys.argv 方式获取的参数太原始和简陋了，不方便拿来即用，好在官方有提供了一个！
+
+`argparse` 是 Python 标准库里自带的**命令行参数解析库**
+
+```python
+from argparse import ArgumentParser
+
+# 创建一个解析器对象，用来“定义”和“解析”命令行参数
+parser = ArgumentParser()
+
+# 定义一个参数 --abc
+parser.add_argument('--abc')
+
+# 解析命令行参数，并打印
+args = parser.parse_args()
+print(args.abc)
+```
+
+### 帮助
+
+当运行脚本加上 `--help` 时，会打印当前脚本支持的所有参数及说明（不会执行脚本内容）。
+`--help` 这个命令参数与 `argparse` 无关，是 python 预知的一个参数。
+
+```python
+from argparse import ArgumentParser
+
+# 创建一个解析器对象，用来“定义”和“解析”命令行参数
+parser = ArgumentParser()
+# 定义一个参数 --abc
+parser.add_argument('--abc', help="就是随意定义的一个参数")
+# 解析命令行参数
+args = parser.parse_args()
+```
+
+![](https://img.dingshaohua.com/doc-python/cli-arg-help-20251205002325.jpg)
+
+:::tip 提示
+
+  注意： `--help` 的行为是在解析参数（parse_args()、parse_known_args()、parse_intermixed_args()）时 触发的。
+
+:::
+
+
+
+
+### 参数说明
+
+**description：在执行 --help 输出里，写一段这个程序说明文字。**
+```python
+ArgumentParser(description='这是段示例程序，用于学习的代码')
+```
+```bash
+py run-test.py --help       
+usage: run-test.py [-h]
+
+这是段示例程序，用于学习的代码
+
+options:
+  -h, --help            show this help message and exit
+```
+
+
+
+**action：告诉 argparse 解析此参数时，怎么处理（默认值为 store，存到 `args.xxx` 里）**
+
+```python
+# store_true / false （这个参数不用带值，只要写上这个选项就变成 True/False）
+# 默认 args.debug == False，加上 --debug → True
+parser.add_argument('--debug', action='store_true')
+# 默认 True，加上 --no-cache 就变成 False（通常会配合 default=True）
+parser.add_argument('--no-cache', action='store_false')
+
+# append（追加到列表）
+# --host a --host b → args.host == ['a', 'b']
+parser.add_argument('--host', action='append')
+
+# store_const（存一个固定常量）
+# --mode-dev → args.mode == 'dev'，
+# 一般和 const + dest 配合，做互斥模式的快捷开关
+parser.add_argument('--mode-dev',
+action='store_const', const='dev', dest='mode')
+
+# count（计数）
+# -v → 1， -vv → 2， -vvv → 3
+parser.add_argument('-v', '--verbose', action='count', default=0)
+```
+
+**default：默认值**   
+```python
+parser.add_argument('--abc', default='hello')
+args = parser.parse_args()
+print(args.abc)
+
+# 输出hello
+py run-test.py
+```
+
+**help：参数的说明文字，显示在 `--help` 输出里**   
+
+```python
+parser.add_argument('--abc', default='hello', help='这就是个随意写的参数')
+```
+
+
+**choices：限制参数取值范围，参数只能是这几个值里的一个**   
+```python
+from argparse import ArgumentParser
+
+# 创建一个解析器对象，用来“定义”和“解析”命令行参数
+parser = ArgumentParser()
+# color 参数的值只能是这三个之一
+parser.add_argument( "--color",choices=["red", "green", "blue"])  
+# 解析并打印
+args = parser.parse_args()
+print(args.color)
+```
+![](https://img.dingshaohua.com/doc-python/cli-arg-choice-20251205005042.jpg)
+
+

@@ -1,0 +1,34 @@
+[
+    "index",
+    {
+        "type": "divider"
+    },
+    {
+        "type": "section-header",
+        "label": "基础语法"
+    },
+    "var-type",
+    "operator-statement",
+    "function",
+    "oop",
+    "module-err",
+    "decorator",
+    "venv",
+    "io",
+    "env-cli-arg",
+    "subprocess",
+    "os-sys",
+    {
+        "type": "divider"
+    },
+    {
+        "type": "section-header",
+        "label": "高级进阶"
+    },
+    "lang-type",
+    "interpreter",
+    "datastructure",
+    "print",
+    "xml",
+    "internet"
+]

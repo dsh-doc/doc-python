@@ -1,0 +1,196 @@
+---
+title: 模块和错误
+---
+
+## 模块
+pyhton 中一个文件就是一个模块,模块的作用
+
+- **代码复用**：将常用的功能封装到模块中，可以在多个程序中重复使用。
+- **命名空间管理**：模块可以避免命名冲突，不同模块中的同名函数或变量不会互相干扰。
+- **代码组织**：将代码按功能划分到不同的模块中，使程序结构更清晰。
+
+### 定义和使用
+
+```python
+# calculator.py
+def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+```
+
+我们通过导入 `import`，来使用计算器这个模块
+
+```python
+# test.py
+import calculator
+
+sum = calculator.add(1, 2)
+print(sum)
+```
+
+当导入一个模块时，Python 会按照以下顺序查找模块：
+
+1. 当前目录。
+2. 环境变量 `PYTHONPATH` 指定的目录。
+3. Python 标准库目录。
+4. `.pth` 文件中指定的目录。
+
+`from modname import xx`   语句：导入一个指定的部分内容到当前文件中
+
+```python
+from calculator import add
+
+sum = add(1, 2)
+print(sum)
+```
+
+### 内置模块
+
+Python 本身带着一些标准的模块库，这些你可以直接导入使用
+
+| 模块名 | 功能描述 |
+| --- | --- |
+| `math` | 数学运算（如平方根、三角函数等） |
+| `os` | 操作系统相关功能（如文件、目录操作） |
+| `sys` | 系统相关的参数和函数 |
+| `random` | 生成随机数 |
+| `datetime` | 处理日期和时间 |
+| `json` | 处理 JSON 数据 |
+| `re` | 正则表达式操作 |
+| `collections` | 提供额外的数据结构（如 defaultdict、deque） |
+| `itertools` | 提供迭代器工具 |
+| `functools` | 高阶函数工具（如 reduce、lru_cache） |
+
+### 包
+
+为了更好的模块化，包是一种管理 Python 模块命名空间的形式，采用 `包名.文件名`。
+
+比如我把计算器模块，放到工具目录中 `utils/calculator.py` ，那 utils 这个文件夹就称之为包。导入计算器工具的时候就需要做出调整了
+
+```python
+import utils.calculator as calculator
+
+sum = calculator.add(1, 2)
+print(sum)
+```
+
+另外我们还可以使用 `from package import item` 简化式语法
+
+```python
+from utils import calculator
+
+sum = calculator.add(1, 2)
+print(sum)
+```
+
+:::tip 提示
+
+根目录下必须有 `__init__.py`才能作为包的规则，其实是 **Python 3.3 之前** 的旧皇历了
+
+:::
+
+
+### `__name__`
+
+平时我们经常会看到这样的 Python 代码：
+
+```python
+if __name__ == "__main__":
+    # 这里的代码只有在模块作为主程序运行时才会执行
+    main()
+```
+
+在 Python 中，__name__  是模块和脚本执行相关的特殊内置全局变量。也就是可以直接访问它：`print(__name__)`  于表示当前模块的名称：
+
+- 当模块作为主程序运行时：__name__ 的值被设置为 "__main__"。
+- 当模块被导入时：__name__ 的值被设置为模块的文件名（不包括 .py 扩展名）。
+
+
+## 错误
+
+### 错误
+
+错误通常指的是语法错误，比如我定义方法的时候，少写了冒号
+
+```python
+def test()
+    print("Hello, World!")
+    
+# 运行就会报错
+# File "py-demo/one.py", line 1
+#    def test()
+              ^
+# SyntaxError: expected ':'
+```
+
+### 异常
+
+即便 Python 程序的语法是正确的，在运行它的时候，也有可能发生错误。运行期检测到的错误被称为异常。异常以不同的类型出现，会输出在错误信息中
+
+```python
+a = 1/0
+# 运行就会报错，0不能作为除数
+# Traceback (most recent call last):
+#   File "py-demo/one.py", line 1, in <module>
+#     a = 1/0
+#         ~^~
+# ZeroDivisionError: division by zero
+```
+
+#### 捕获异常
+
+遇到异常，程序则会立刻终止执行，并输出异常信息。
+
+这显然不是我们想要的，哪怕后续没有程序需要执行了，我们也需要给用户一个更友好的异常提示
+
+Python 提供了 `try/except` 来捕获处理异常
+
+```python
+try:
+    a = 1/0
+except ZeroDivisionError:
+    print("你犯错了，除数怎么能是0呢")
+```
+
+try-finally 语句，无论有没有发生异常，最终都会执行
+
+#### 手抛异常
+
+```python
+x = 10
+if x > 5:
+    raise Exception('x 不能大于 5。x 的值为: {}'.format(x))
+```
+
+#### 断言与异常
+
+Python assert（断言）用于判断一个表达式，在表达式条件为 false 的时候触发异常。
+
+```python
+assert 1>2
+# 运行将会抛出异常
+# Traceback (most recent call last):
+#   File "py-demo/one.py", line 1, in <module>
+#     assert 1>2
+#            ^^^
+# AssertionError
+```
+
+#### 自定义异常
+
+你可以通过创建一个新的异常类来拥有自己的异常，异常类继承自 Exception 类
+
+```python
+class MyError(Exception):
+        def __init__(self, value):
+            self.value = value
+        def __str__(self):
+            return repr(self.value)
+
+try:
+    raise MyError(2*2)
+except MyError as e:
+    print('My exception occurred, value:', e.value)
+```
