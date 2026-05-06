@@ -1,8 +1,12 @@
 ---
-title: XML 解析
+title: 文件解析
 ---
 
-## 什么是xml
+## json解析
+待完成
+
+## xml 解析
+### 什么是xml
 XML 指可扩展标记语言，被设计用来传输和存储数据，和 json 属于同类产品（目前地位逐渐被 json 取代），这里不再过多介绍！
 
 一个典型的 xml，大致这样 `test.xml`
@@ -17,7 +21,7 @@ Python 使用 ElementTree 解析 xml，对 xml 进行增删改查，以下具体
 
 
 
-## 解析
+### 解析
 fromstring方法： 可以将包含XML数据的字符串转换为 Element 对象：
 ```python
 import xml.etree.ElementTree as ET
@@ -36,8 +40,8 @@ tree = ET.parse('example.xml')
 root = tree.getroot()
 ```
 
-## 查找
-### 查找元素
+### 查找
+#### 查找元素
 ```py
 # find方法： 可以查找具有指定标签的第一个子元素
 title_element = root.find('title')
@@ -75,7 +79,7 @@ for book in root.findall('book'):
 ```
 
 
-### 查找元素的属性和内容
+#### 查找元素的属性和内容
 ```py
 # 通过 attrib 可以访问元素的属性
 price = book_element.attrib['price']
@@ -84,7 +88,7 @@ price = book_element.attrib['price']
 title_text = title_element.text
 ```
 
-## 创建
+### 创建
 ```py
 import xml.etree.ElementTree as ET
 
@@ -120,7 +124,7 @@ tree.write('books.xml', encoding='utf-8', xml_declaration=True)
 </bookstore>
 ```
 
-## 修改
+### 修改
 修改很简单，无论是修改内容还是属性，只要找到直接重新赋值即可！
 ```py
 import xml.etree.ElementTree as ET

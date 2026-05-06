@@ -28,7 +28,6 @@
     "lang-type",
     "interpreter",
     "datastructure",
-    "print",
-    "xml",
+    "file-parse",
     "internet"
 ]

@@ -13,3 +13,21 @@
   --rp-c-brand-dark: #ff6b9d;
   --rp-c-brand-darker: #e55a8a;
 }
+
+
+.rp-sidebar-item{
+  line-height: 18px!important;
+}
+
+.rp-toc-item{
+  margin-top: 6px!important;
+}
+
+.rp-sidebar-section-header{
+  margin-top: 0!important;
+}
+
+.rp-sidebar-divider{
+  margin-top: 0.3rem!important;
+  margin-bottom: 0.3rem!important;
+}

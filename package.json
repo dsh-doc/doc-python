@@ -11,15 +11,15 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@rspress/core": "^2.0.0-rc.7"
+    "@rspress/core": "^2.0.10"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.12",
-    "@types/node": "^25.0.10",
-    "@types/react": "^19.2.9",
+    "@biomejs/biome": "2.4.14",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "wrangler": "^4.87.0"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "wrangler": "^4.88.0"
   }
 }
