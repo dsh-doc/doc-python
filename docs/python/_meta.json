@@ -29,5 +29,6 @@
     "interpreter",
     "datastructure",
     "file-parse",
-    "internet"
+    "internet",
+    "sync"
 ]
