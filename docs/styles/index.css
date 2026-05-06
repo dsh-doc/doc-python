@@ -31,3 +31,10 @@
   margin-top: 0.3rem!important;
   margin-bottom: 0.3rem!important;
 }
+
+img[alt="50"] { width: 50px; }
+img[alt="100"] { width: 100px; }
+img[alt="150"] { width: 150px; }
+img[alt="200"] { width: 200px; }
+img[alt="250"] { width: 250px; }
+img[alt="300"] { width: 300px; }
