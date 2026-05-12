@@ -1,35 +1,37 @@
 [
-    "index",
-    {
-        "type": "divider"
-    },
-    {
-        "type": "section-header",
-        "label": "基础语法"
-    },
-    "var-type",
-    "operator-statement",
-    "function",
-    "oop",
-    "module-err",
-    "decorator",
-    "io",
-    "env-cli-arg",
-    "subprocess",
-    "os-sys",
-    {
-        "type": "divider"
-    },
-    {
-        "type": "section-header",
-        "label": "高级进阶"
-    },
-    "toolchain",
-    "uv",
-    "lang-type",
-    "interpreter",
-    "datastructure",
-    "file-parse",
-    "sync",
-    "internet"
+  "index",
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section-header",
+    "label": "基础语法"
+  },
+  "var-type",
+  "operator-statement",
+  "function",
+  "oop",
+  "module-err",
+  "decorator",
+  "io",
+  "env-cli-arg",
+  "subprocess",
+  "os-sys",
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section-header",
+    "label": "高级进阶"
+  },
+  "toolchain",
+  "uv",
+  "lang-type",
+  "interpreter",
+  "advanced-function",
+  "datastructure",
+  "iterator",
+  "file-parse",
+  "sync",
+  "internet"
 ]

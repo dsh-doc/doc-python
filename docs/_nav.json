@@ -8,5 +8,10 @@
     "text": "Pytest",
     "link": "/pytest/",
     "activeMatch": "/pytest/"
+  },
+  {
+    "text": "Server",
+    "link": "/server/",
+    "activeMatch": "/server/"
   }
 ]

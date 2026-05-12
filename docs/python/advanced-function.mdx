@@ -1,0 +1,235 @@
+---
+title: 函数进阶
+---
+
+## args和kwargs
+
+在定义函数时，如果你不确定调用者会传多少个参数，就可以使用 `*args` 和 `**kwargs`。
+
+简单理解：
+
+- `*args`：接收多个位置参数
+- `**kwargs`：接收多个关键字参数
+
+### `*args`
+
+`*args` 会把多余的位置参数收集成一个元组。
+
+```python
+def add(*args):
+    print(args)
+
+add(1, 2, 3)
+```
+
+输出结果：
+
+```txt
+(1, 2, 3)
+```
+
+所以可以用它来写一个支持任意数量参数的求和函数：
+
+```python
+def add(*args):
+    total = 0
+
+    for num in args:
+        total += num
+
+    return total
+
+print(add(1, 2))        # 3
+print(add(1, 2, 3, 4))  # 10
+```
+
+### `**kwargs`
+
+`**kwargs` 会把多余的关键字参数收集成一个字典。
+
+```python
+def show_info(**kwargs):
+    print(kwargs)
+
+show_info(name="张三", age=18)
+```
+
+输出结果：
+
+```txt
+{'name': '张三', 'age': 18}
+```
+
+可以继续遍历这个字典：
+
+```python
+def show_info(**kwargs):
+    for key, value in kwargs.items():
+        print(f"{key}: {value}")
+
+show_info(name="张三", age=18, city="上海")
+```
+
+输出结果：
+
+```txt
+name: 张三
+age: 18
+city: 上海
+```
+
+### 一起使用
+
+`*args` 和 `**kwargs` 可以一起使用：
+
+```python
+def demo(*args, **kwargs):
+    print(args)
+    print(kwargs)
+
+demo(1, 2, 3, name="张三", age=18)
+```
+
+输出结果：
+
+```txt
+(1, 2, 3)
+{'name': '张三', 'age': 18}
+```
+
+需要注意顺序，`*args` 要写在 `**kwargs` 前面：
+
+```python
+def demo(*args, **kwargs):
+    pass
+```
+
+### 总结
+
+```txt
+*args 接收多余的位置参数，保存为元组
+**kwargs 接收多余的关键字参数，保存为字典
+```
+
+## 偏函数 partial
+
+`partial` 中文一般叫 **偏函数**，它来自 `functools` 模块。
+
+它的作用很简单：**先固定函数的一部分参数，得到一个新的函数**。
+
+### 基本用法
+
+比如有一个打招呼函数：
+
+```python
+def say(word, name):
+    print(f"{word}, {name}")
+```
+
+正常调用时，每次都要传两个参数：
+
+```python
+say("你好", "张三")
+say("你好", "李四")
+say("你好", "王五")
+```
+
+如果你经常都说“你好”，就可以用 `partial` 先把第一个参数固定住：
+
+```python
+from functools import partial
+
+def say(word, name):
+    print(f"{word}, {name}")
+
+say_hello = partial(say, "你好")
+
+say_hello("张三")
+say_hello("李四")
+say_hello("王五")
+```
+
+输出结果：
+
+```txt
+你好, 张三
+你好, 李四
+你好, 王五
+```
+
+此时 `say_hello` 就是一个新函数，它只需要传 `name`，因为 `word` 已经被提前固定成了 `"你好"`。
+
+### 再看一个例子
+
+比如有一个加法函数：
+
+```python
+def add(a, b):
+    return a + b
+```
+
+如果你想得到一个“专门加 10”的函数：
+
+```python
+from functools import partial
+
+def add(a, b):
+    return a + b
+
+add_ten = partial(add, 10)
+
+print(add_ten(5))   # 15
+print(add_ten(20))  # 30
+```
+
+这里的 `add_ten(5)`，本质上相当于：
+
+```python
+add(10, 5)
+```
+
+### 固定关键字参数
+
+`partial` 也可以固定关键字参数。
+
+```python
+from functools import partial
+
+def create_user(name, role):
+    print(f"{name} 的角色是 {role}")
+
+create_admin = partial(create_user, role="管理员")
+
+create_admin("张三")
+create_admin("李四")
+```
+
+输出结果：
+
+```txt
+张三 的角色是 管理员
+李四 的角色是 管理员
+```
+
+### 和普通函数的区别
+
+不用 `partial`，也可以自己写一个新函数：
+
+```python
+def say_hello(name):
+    return say("你好", name)
+```
+
+这当然没问题。
+
+`partial` 的好处是：当你只是想简单固定几个参数时，不需要再额外写一层函数，代码会更简洁。
+
+### 总结
+
+`partial` 可以把一个参数较多的通用函数，变成一个参数更少的专用函数。
+
+简单记：
+
+```txt
+偏函数 = 提前固定一部分参数的新函数
+```
