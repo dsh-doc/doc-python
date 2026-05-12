@@ -1,0 +1,137 @@
+---
+title: 工具链
+---
+
+想要安安稳稳的写Python，你需要了解并做好一系列相关的工具准备！
+
+
+## 虚拟环境
+
+Python 的包管理方式和 Java/Node等不一样，这让从其它语言转来的开发者感到困惑。
+
+- **Python** 诞生较早（1991年），当时"一个系统一个Python"是主流思想
+- **Node.js**（2009年）从设计时就考虑了多项目、多版本的需求，同样也是针对项目安装的
+- **Java** 的企业级应用背景决定了它需要严格的依赖隔离，它的依赖就是安装到当前项目的
+
+如果没有虚拟环境，就会出现多个项目共用一个全局的Python 环境，导致版本冲突，所有的依赖将都会安装到全局（`/usr/local/lib/python3.xx/*`）。
+
+```bash
+# 项目A 需要 Django 2.2
+pip install django==2.2
+
+# 项目B 需要 Django 4.0
+pip install django==4.0  # 覆盖了 2.2！
+
+# 现在项目A 无法运行了！
+```
+
+✅ 使用虚拟环境的解决方案
+
+```bash
+# 项目A
+python -m venv venv_a
+source venv_a/bin/activate
+pip install django==2.2  # 只在 venv_a 中
+
+# 项目B
+python -m venv venv_b
+source venv_b/bin/activate
+pip install django==4.0  # 只在 venv_b 中
+# 两个项目互不干扰！
+```
+
+执行完上述步骤后，你的项目目录应该是这样的：
+
+```sh
+/Users/admin/files.localized/mcode/py-demo/
+├── venv/                    # 虚拟环境目录（不要提交到git）
+│   ├── bin/
+│   │   ├── python          # Python 解释器
+│   │   ├── pip            # pip 包管理器
+│   │   └── activate       # 激活脚本
+│   ├── lib/
+│   │   └── python3.x/     # 安装的包都在这里
+│   └── pyvenv.cfg
+├── （你的其他项目文件）
+└── （测试文件等）
+```
+
+需要注意的是，以后每次打开新的终端窗口工作时，都需要手动进入虚拟环境（因为“激活虚拟环境”只是修改当前终端进程里的环境变量）
+```bash
+# 激活虚拟环境
+source venv_xx/bin/activate # linux
+.\venv_xx\Scripts\Activate # windows
+# 退出虚拟环境
+deactivate
+```
+
+
+## 依赖管理
+没人会从零开始写所有东西，你的代码依赖别人写好的代码。例如你想发 HTTP 请求、操作 Excel、 连接数据库这些都已经有人写好了。你直接安装使用即可。
+
+### 安装依赖
+安装依赖很简单，直接使用 python 内置的包管理器 pip 即可
+```sh
+pip install xxx
+```
+所有的依赖包，都来自于Python 官方包仓库（应用商店）[Pypi](https://pypi.org‌‌‌) 里，当然你也可以开发一个牛逼的功能包传上去供他人下载使用。
+
+
+### 依赖包的可执行脚本
+Python 包安装后，除了可以被代码 `import` 使用，有些包还会额外注册命令行工具。
+
+比如安装：
+
+```bash
+pip install pytest
+```
+
+之后就可以执行：
+
+```bash
+pytest
+```
+
+这些命令通常是在安装包时生成的，放在当前虚拟环境的可执行目录里：
+
+```bash
+.venv/bin/pytest          # macOS / Linux
+.venv/Scripts/pytest.exe  # Windows
+```
+
+它们一般用于命令行操作，比如测试、格式化、启动服务、创建项目等。`uv run` 的作用就是在当前项目环境里找到并执行这些命令。
+
+
+### 依赖包可模块执行
+Python 中有些依赖包不仅能被 import 使用，还能直接作为模块运行，例如：
+
+```sh
+python -m xx # 比如pytest
+```
+
+这里的 -m 表示“将模块作为程序执行”。这意味着 pytest 不只是一个普通依赖包，还提供了可执行入口。通常，一个包想支持，需要实现：
+```
+xx/__main__.py
+```
+
+Python 会自动查找并执行这个入口文件。本质上都是在运行模块入口，而不是执行 shell 命令。相比直接运行`pytest`，此方式更稳定，因为它能确保使用当前 Python 环境中的 pytest。
+
+
+### 依赖清单
+默认情况下，当你安装了一个依赖后 项目并不会生自动生成依赖清单，就会引发一个问题：别人拿到你的代码时，不知道需要安装什么依赖。所以我们每次安装完后，可以手动调用一个命令来生成！
+
+```bash
+(venv) pip freeze > requirements.txt
+
+```
+
+这会创建 `requirements.txt` 文件，记录所有已安装的包，方便其他人重现环境，别人只需要执行一下代码即可安装所有依赖。
+```bash
+pip install -r requirements.txt
+```
+
+
+这是pip提供的能力，但是 pip freeze 并不完美，它会：把整个环境所有包都导出来。所以 requirements.txt 常常很脏。包括：你主动装的、间接依赖、临时测试包。
+
+于是后来出现：更高级工具例如：Poetry、uv、PDM￼。它们会：管依赖、锁版本、自动解析依赖树
+

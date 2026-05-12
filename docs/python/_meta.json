@@ -13,7 +13,6 @@
     "oop",
     "module-err",
     "decorator",
-    "venv",
     "io",
     "env-cli-arg",
     "subprocess",
@@ -25,10 +24,12 @@
         "type": "section-header",
         "label": "高级进阶"
     },
+    "toolchain",
+    "uv",
     "lang-type",
     "interpreter",
     "datastructure",
     "file-parse",
-    "internet",
-    "sync"
+    "sync",
+    "internet"
 ]

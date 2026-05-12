@@ -1,0 +1,387 @@
+---
+title: UV工具
+---
+
+## 认识 uv
+
+UV 是 Astral 团队开发的 Python 工具。它不仅仅是Python包管理器，也不只是Python项目管理工具，还能直接管理 Python 解释器本身。
+
+
+以前写 Python 项目，常常要同时接触很多工具；而 uv 想解决的问题就是：把这些分散的能力尽量统一到一个命令里。所以更准确地说，uv 管的是 Python 开发环境的整体链路：解释器、虚拟环境、依赖、锁文件、脚本和工具。
+
+| 需求 | 以前常用工具 | uv 对应能力 |
+| --- | --- | --- |
+| 安装和切换 Python 版本 | `pyenv` | `uv python` |
+| 创建虚拟环境 | `venv`、`virtualenv` | `uv venv` |
+| 安装依赖包 | `pip` | `uv add`、`uv pip install` |
+| 管理项目依赖 | `pip-tools`、`poetry`、`pdm` | `uv add`、`uv remove`、`uv sync` |
+| 锁定完整依赖版本 | `pip-tools`、`poetry`、`pdm` | `uv.lock` |
+| 在项目环境中运行命令 | 手动激活虚拟环境（`source venv`）后执行 | `uv run` |
+| 运行或安装命令行工具 | `pipx` | `uv tool`、`uvx` |
+
+
+
+## 安装
+
+
+使用官方安装脚本安装
+
+```bash
+# macOS 和 Linux 可以
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows 可以在 PowerShell 中执行
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+如果你已经有 Python 和 pip，也可以直接用 pip 安装：
+
+```bash
+pip install uv
+```
+
+安装完成后，检查版本：
+
+```bash
+uv --version
+```
+
+如果是通过官方安装脚本安装的，后续可以用下面的命令升级：
+
+```bash
+uv self update
+```
+
+## 管理 Python 本身
+
+`uv` 可以直接安装和管理 Python（解释器） 版本，这一点和只负责安装包的 `pip` 很不一样。
+
+查看本机和远程可用的 Python 版本：
+
+```bash
+uv python list
+```
+
+安装指定版本：
+
+```bash
+uv python install 3.12
+
+# 安装多个版本也可以
+uv python install 3.11 3.12 3.13
+```
+
+
+查看当前项目会使用哪个版本的 Python：
+
+```bash
+uv run python --version
+```
+
+给当前项目固定 Python 版本（执行后会生成或更新 `.python-version`）：
+
+```bash
+uv python pin 3.12
+```
+
+这意味着团队成员进入项目后，uv` 会优先按照这个版本来创建环境。别人不需要先手动装好完全一致的 Python，只要用 `uv` 同步项目即可。
+
+:::tip 提示
+为啥要管理python（多版本）：因为不同项目可能依赖不同的 Python 版本。比如老项目只能跑在 Python 3.9，新项目想用 Python 3.12 的新特性，如果电脑上只有一个全局 Python，就很容易出现版本冲突。管理 Python 多版本，就是为了让每个项目都能使用自己需要的解释器版本，互不影响。
+:::
+
+## 创建项目
+
+新建一个 Python 项目：
+
+```bash
+uv init hello-uv
+cd hello-uv
+```
+
+这会生成基础项目文件，例如：
+
+```txt
+hello-uv/
+├── .python-version
+├── README.md
+├── main.py
+└── pyproject.toml
+```
+
+常见文件含义：
+
+- `.python-version`：记录项目期望使用的 Python 版本
+- `pyproject.toml`：记录项目元信息和直接依赖
+- `uv.lock`：锁定完整依赖版本，第一次同步或安装依赖后生成
+- `.venv`：项目虚拟环境目录，通常不提交到 Git
+
+如果是在已有目录中初始化项目：
+
+```bash
+uv init .
+```
+
+## 运行代码
+
+使用 `uv run` 运行 Python 文件：
+
+```bash
+uv run python main.py
+```
+
+也可以直接运行项目里的命令：
+
+```bash
+uv run pytest
+uv run ruff check .
+```
+
+`uv run` 会确保当前项目环境可用。首次执行时，若还没有 `.venv`，它会根据项目配置创建环境并安装依赖。
+
+## 管理依赖
+
+添加依赖：
+
+```bash
+uv add requests
+uv add "django>=5.0,<6.0" # 指定版本
+uv add --dev pytest ruff # 指定仅作用于开发依赖
+```
+
+
+移除依赖：
+
+```bash
+uv remove requests
+```
+
+查看依赖树：
+
+```bash
+uv tree
+```
+
+添加依赖后，`uv` 会更新两个地方：
+
+- `pyproject.toml`：记录你声明的直接依赖
+- `uv.lock`：记录最终解析出的完整依赖版本
+
+## 同步环境
+
+当别人拿到你的项目后，一般只需要执行：
+
+```bash
+uv sync
+```
+
+它会根据 `pyproject.toml` 和 `uv.lock` 创建或更新 `.venv`。
+
+如果只想根据锁文件安装，不允许重新解析依赖：
+
+```bash
+uv sync --frozen
+```
+
+这个命令适合 CI 或线上构建，因为它能保证依赖版本不会被临时改变。
+
+## 虚拟环境
+
+如果你只是想创建一个虚拟环境，也可以直接使用（默认会创建 `.venv` 目录）：
+
+```bash
+uv venv
+```
+
+激活方式和普通虚拟环境一样：
+```bash
+source .venv/bin/activate # linxu
+.\.venv\Scripts\Activate # windows
+```
+
+不过在 `uv` 项目里，很多时候不需要手动激活虚拟环境，直接使用 `uv run` 会自动激活， 更简单：
+
+```bash
+uv run python --version
+uv run python main.py
+```
+
+创建项目时也可以直接指定 Python 版本：
+
+```bash
+uv init demo --python 3.12
+```
+
+## 运行临时脚本
+
+`uv` 支持在不创建完整项目的情况下运行脚本。
+
+例如有一个 `demo.py`：
+
+```python
+import requests
+
+res = requests.get("https://example.com")
+print(res.status_code)
+```
+
+可以给脚本添加依赖元数据：
+
+```bash
+uv add --script demo.py requests
+```
+
+然后运行：
+
+```bash
+uv run demo.py
+```
+
+这种方式适合写一次性脚本、自动化脚本和小工具，不需要手动维护一个完整项目。
+
+## 运行命令行工具
+
+临时运行一个工具：
+
+```bash
+uvx ruff check .
+```
+
+`uvx` 可以理解为 `uv tool run` 的简写：
+
+```bash
+uv tool run ruff check .
+```
+
+如果某个工具经常使用，可以安装到用户环境：
+
+```bash
+uv tool install ruff
+ruff --version
+```
+
+常见适合用 `uvx` 运行的工具：
+
+```bash
+uvx ruff check .
+uvx black .
+uvx pytest
+uvx httpie https://example.com
+```
+
+## pip 兼容模式
+
+如果你暂时还不想改造项目结构，可以用 `uv pip` 替代一部分 `pip` 命令。
+
+创建虚拟环境：
+
+```bash
+uv venv
+```
+
+安装包：
+
+```bash
+uv pip install flask
+```
+
+从 `requirements.txt` 安装：
+
+```bash
+uv pip install -r requirements.txt
+```
+
+导出当前环境：
+
+```bash
+uv pip freeze > requirements.txt
+```
+
+同步环境到 `requirements.txt`：
+
+```bash
+uv pip sync requirements.txt
+```
+
+需要注意的是，`uv pip sync` 会移除环境中不在文件里的包，所以它更适合可复现环境；如果只是临时加包，用 `uv pip install` 更安全。
+
+## 从 pip 项目迁移
+
+传统项目通常长这样：
+
+```txt
+demo/
+├── main.py
+└── requirements.txt
+```
+
+可以先创建虚拟环境并安装原依赖：
+
+```bash
+uv venv
+uv pip install -r requirements.txt
+```
+
+如果想迁移到 `pyproject.toml` 工作流，可以初始化项目：
+
+```bash
+uv init .
+uv add -r requirements.txt
+```
+
+之后团队协作就可以使用：
+
+```bash
+uv sync
+uv run python main.py
+```
+
+## 常用命令速查
+
+| 场景 | 命令 |
+| --- | --- |
+| 查看版本 | `uv --version` |
+| 查看 Python 版本 | `uv python list` |
+| 安装 Python | `uv python install 3.12` |
+| 固定项目 Python | `uv python pin 3.12` |
+| 初始化项目 | `uv init demo` |
+| 在当前目录初始化 | `uv init .` |
+| 添加依赖 | `uv add requests` |
+| 添加开发依赖 | `uv add --dev pytest` |
+| 移除依赖 | `uv remove requests` |
+| 同步环境 | `uv sync` |
+| 运行命令 | `uv run python main.py` |
+| 查看依赖树 | `uv tree` |
+| 创建虚拟环境 | `uv venv` |
+| 临时运行工具 | `uvx ruff check .` |
+| pip 兼容安装 | `uv pip install flask` |
+
+## 使用建议
+
+新项目推荐直接使用：
+
+```bash
+uv init demo
+uv python pin 3.12
+uv add requests
+uv run python main.py
+```
+
+已有项目可以先使用：
+
+```bash
+uv venv
+uv pip install -r requirements.txt
+```
+
+等项目稳定后，再逐步迁移到 `pyproject.toml` 和 `uv.lock`。
+
+:::tip 提示
+`uv.lock` 建议提交到 Git，这样团队成员和 CI 能安装到一致的依赖版本；`.venv` 不要提交，它是本地生成的虚拟环境目录。
+:::
+
+## 参考资料
+
+- [uv 官方文档](https://docs.astral.sh/uv/)
+- [uv CLI Reference](https://docs.astral.sh/uv/reference/cli/)
+- [uv GitHub](https://github.com/astral-sh/uv)
